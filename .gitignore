@@ -1,0 +1,15 @@
+# Python and local environments
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+
+# Runtime ticket data
+data/tickets.json
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store

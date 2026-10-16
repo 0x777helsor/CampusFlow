@@ -33,9 +33,9 @@ python -m unittest discover -s tests -v
 
 If your system provides `python3` instead of `python`, use `python3` in these commands.
 
-The current menu offers `1` create, `2` list, `3` view by ID, and `0` exit. Each successful creation is saved immediately to `data/tickets.json`, excluded from Git. On restart, existing tickets are loaded before the menu appears. If loading fails, the program displays an error and exits so the original data is preserved. With the app closed, move that file elsewhere to start fresh while preserving a backup.
+The menu offers `1` create, `2` list, `3` view by ID, `4` assign, `5` change status, `6` reopen, `7` work queue, `8` reports, and `0` exit. Ticket IDs accept case variations at the prompts; status changes accept `in_progress` or `resolved`.
 
-Assignment, status changes, reopening, queue, and report menu options will be connected when Fabian's functions are ready.
+Every successful creation, assignment, status change, and reopening is saved immediately to `data/tickets.json`, excluded from Git. On restart, existing tickets are loaded before the menu appears. If loading fails, the program displays an error and exits so the original data is preserved. With the app closed, move that file elsewhere to start fresh while preserving a backup.
 
 ## Required behavior
 
@@ -51,10 +51,12 @@ Issues: https://github.com/0x777helsor/CampusFlow/issues
 
 PR index: https://github.com/0x777helsor/CampusFlow/pulls
 
-## Current limitations
+## Current implementation and limitations
 
-Ticket creation, lookup, priority validation, JSON storage, and the create/list/view CLI are implemented. An initial workflow guard is also present. Fabian owns the remaining assignment, workflow, queue, and report functions; their CLI integration is pending. Both fellows have agreed to the documented function contracts.
+All seven features are connected to the CLI. Kingsley's ticket creation, lookup, and JSON storage use the agreed contracts alongside Fabian's assignment, lifecycle, queue, and report functions. Previously reviewed priority and workflow changes remain part of the implementation.
 
-The tests cover priority boundaries, invalid creation inputs, lookup, JSON round trips, duplicate IDs, creation after reload, malformed data, and preservation of existing files when saving fails. CLI tests also exercise create/list/view, restarts, invalid inputs, startup errors, and recovery from failed saves. Storage validates the agreed eight-field ticket format before loading or saving; file access errors propagate to the caller. Saves write a temporary file in the destination directory and replace the destination only after a successful write. The CLI adds a new ticket to its active collection only after saving succeeds.
+Tests cover priority boundaries, invalid creation inputs, lookup, lifecycle guards, queue ordering, empty reports, JSON round trips, duplicate IDs, creation after reload, malformed data, and preservation of existing files when saving fails. CLI tests exercise the full lifecycle, reopening, queue and report output, restarts, invalid inputs, startup errors, and failed saves. Storage validates the agreed eight-field ticket format. Saves write a temporary file in the destination directory and replace the destination only after a successful write; the CLI updates its active collection only after saving succeeds.
 
-Latest local feature-branch verification: `python3 -m unittest discover -s tests -v` ran 43 tests successfully. This result does not establish final integration or partner approval; those checks remain required on the completed application.
+Integration verification on `feat/1-tickets-storage-cli`: `python3 -m unittest discover -s tests -v` ran 61 tests successfully after merging `origin/main` and connecting all menu options.
+
+This is a single-user local application. Run one CLI instance at a time; concurrent writers are not coordinated. Independent learning evidence remains incomplete, and this integration requires partner review and approval before merging. The full test suite and demonstration must be repeated on integrated `main` after approval and merge.

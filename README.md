@@ -24,14 +24,18 @@ Activate with `source .venv/bin/activate` on Linux/macOS or `.venv\Scripts\Activ
 
 ## Run and test
 
-Once implemented:
+Run the current CLI and tests:
 
 ```bash
 python main.py
 python -m unittest discover -s tests -v
 ```
 
-The planned menu covers create, list/view, assign, change status, reopen, queue, reports, and exit. Runtime tickets will live in `data/tickets.json`, excluded from Git. With the app closed, move that file elsewhere to start fresh while preserving a backup.
+If your system provides `python3` instead of `python`, use `python3` in these commands.
+
+The current menu offers `1` create, `2` list, `3` view by ID, and `0` exit. Each successful creation is saved immediately to `data/tickets.json`, excluded from Git. On restart, existing tickets are loaded before the menu appears. If loading fails, the program displays an error and exits so the original data is preserved. With the app closed, move that file elsewhere to start fresh while preserving a backup.
+
+Assignment, status changes, reopening, queue, and report menu options will be connected when Fabian's functions are ready.
 
 ## Required behavior
 
@@ -49,4 +53,8 @@ PR index: https://github.com/0x777helsor/CampusFlow/pulls
 
 ## Current limitations
 
-This is the planning foundation. Application code and tests are not implemented; no test results or reviewed feature PRs exist yet. Both fellows have agreed to the documented function contracts.
+Ticket creation, lookup, priority validation, JSON storage, and the create/list/view CLI are implemented. An initial workflow guard is also present. Fabian owns the remaining assignment, workflow, queue, and report functions; their CLI integration is pending. Both fellows have agreed to the documented function contracts.
+
+The tests cover priority boundaries, invalid creation inputs, lookup, JSON round trips, duplicate IDs, creation after reload, malformed data, and preservation of existing files when saving fails. CLI tests also exercise create/list/view, restarts, invalid inputs, startup errors, and recovery from failed saves. Storage validates the agreed eight-field ticket format before loading or saving; file access errors propagate to the caller. Saves write a temporary file in the destination directory and replace the destination only after a successful write. The CLI adds a new ticket to its active collection only after saving succeeds.
+
+Latest local feature-branch verification: `python3 -m unittest discover -s tests -v` ran 43 tests successfully. This result does not establish final integration or partner approval; those checks remain required on the completed application.

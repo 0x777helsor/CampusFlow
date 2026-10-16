@@ -4,7 +4,22 @@ Each fellow records at least three real interactions, including one suggestion i
 
 ## Fellow: KINGSLEY AMORIE
 
-No verified entries recorded yet.
+No completed independent learning entries recorded yet.
+
+### Lookup practice — incomplete learning entry
+
+- Problem: Implement the agreed `get_ticket(tickets, ticket_id)` function.
+- Initial understanding demonstrated in conversation: Kingsley predicted that a matching book lookup returns its title, that an unknown ID raises ValueError, and that raising inside the loop would stop the search before all entries were checked.
+- Independent code attempt submitted by Kingsley:
+
+  ```text
+  def get_tick(tickets, ticket_id):    for ticket in tickets:        if ticket["id"] == tickets_id:        return tickets;    raise ValueError("Unknown book ID")
+  ```
+
+- AI feedback: A successful lookup returns the whole matching dictionary. Use `ticket_id` consistently, return `ticket` rather than the collection, indent the return inside the matching condition, and raise after the loop.
+- Application: The corrected function was added to `campusflow/tickets.py`. AI added tests for finding a match after a non-match, rejecting unknown IDs without mutation, and searching an empty collection.
+- Verification performed by AI: The full local feature-branch suite ran 43 tests successfully, including the three lookup tests. This is not a claim that Kingsley independently ran those tests.
+- Still needed from Kingsley: An independently run experiment with actual output, his explanation after verification, and his decision about the guidance. This practice is not yet counted as a completed verified interaction or as independently corrected/rejected AI advice.
 
 ## Fellow: FABIAN PAUL
 

@@ -47,6 +47,6 @@ Issues: https://github.com/0x777helsor/CampusFlow/issues
 
 PR index: https://github.com/0x777helsor/CampusFlow/pulls
 
-## Current limitations
+## Current implementation and limitations
 
-This is the planning foundation. Application code and tests are not implemented; no test results or reviewed feature PRs exist yet. Both fellows have agreed to the documented function contracts.
+Ticket priority validation, workflow lifecycle operations, queue ordering, and summary report functions are implemented with automated tests. The initial setup and feature PRs for ticket priority and the workflow status guard have been reviewed and merged. The command-line menu and JSON persistence are not implemented yet, so the application is not runnable end to end. The complete suite should be run again after the remaining features are integrated on `main`.

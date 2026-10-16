@@ -4,7 +4,38 @@ Each fellow records at least three real interactions, including one suggestion i
 
 ## Fellow: KINGSLEY AMORIE
 
-No verified entries recorded yet.
+Two completed verified interactions are recorded below. One further interaction involving an independently corrected, improved, or rejected AI suggestion is still required.
+
+### Interaction #1 — Lookup, return values, and loop placement
+
+- Problem: Implement the agreed `get_ticket(tickets, ticket_id)` function.
+- Initial understanding demonstrated in conversation: Kingsley predicted that a matching book lookup returns its title, that an unknown ID raises ValueError, and that raising inside the loop would stop the search before all entries were checked.
+- Independent code attempt submitted by Kingsley:
+
+  ```text
+  def get_tick(tickets, ticket_id):    for ticket in tickets:        if ticket["id"] == tickets_id:        return tickets;    raise ValueError("Unknown book ID")
+  ```
+
+- AI feedback: A successful lookup returns the whole matching dictionary. Use `ticket_id` consistently, return `ticket` rather than the collection, indent the return inside the matching condition, and raise after the loop.
+- Application: The corrected function was added to `campusflow/tickets.py`. AI added tests for finding a match after a non-match, rejecting unknown IDs without mutation, and searching an empty collection.
+- Verification performed by AI: The full local feature-branch suite ran 43 tests successfully, including the three lookup tests. This is not a claim that Kingsley independently ran those tests.
+- Independent verification by Kingsley: He ran `python3 -m unittest discover -s tests -p test_tickets.py -v` and shared the terminal output: `Ran 18 tests in 0.001s`, followed by `OK`. All three lookup tests passed, including finding a ticket after a non-matching entry and rejecting unknown IDs without changing the collection.
+- Decision: Accepted the corrected return behavior because a lookup by ID should return the matching record rather than the whole collection.
+- What Kingsley can explain in his own words: "A lookup by ID should return the matching ticket. return ticket immediately exits the function with that record. Returning tickets would give the caller the whole collection"
+- Related implementation commit: `d7be621`; `campusflow/tickets.py` and `tests/test_tickets.py`.
+- Critical-evaluation requirement: Still pending. This interaction records accepted AI guidance, not an independently corrected, improved, or rejected AI suggestion.
+
+### Interaction #2 — Generating IDs when numbers have gaps
+
+- Problem: Understand why new ticket IDs use the maximum existing numeric ID plus one rather than the ticket count plus one.
+- Initial understanding: Not separately stated before the exercise; Kingsley correctly predicted that the two calculations would return 3 and 4 for existing IDs `[1, 3]`.
+- AI exercise: Predict both results, then run `python3 -c 'ids = [1, 3]; print(len(ids) + 1, max(ids) + 1)'` and explain which result avoids a duplicate ID.
+- Independent prediction and verification: Kingsley replied "3 and 4", then ran the command and shared terminal output `3 4`.
+- Useful guidance: Computing a duplicate number does not itself raise ValueError; CampusFlow's storage validator rejects duplicate IDs when loading or saving. The next number should be 4 because 3 already exists.
+- Decision: Accepted maximum-based allocation because the number of tickets does not identify the largest existing ID.
+- What Kingsley can explain in his own words: "Because IDs can have gaps, the number of tickets doesn’t tell you the largest ID." He explained that `len(ids) + 1` gives the existing ID 3, whereas `max(ids) + 1` gives the unused ID 4, avoiding collisions after earlier IDs are deleted or skipped.
+- Related file and commit: `campusflow/tickets.py`, `create_ticket()` in `d7be621`; the application also uses a default maximum of zero for an empty collection.
+- Scope: This verifies allocation from the IDs currently present. Deleting tickets is not an implemented CampusFlow feature. This entry does not claim independently corrected or rejected AI advice.
 
 ## Fellow: FABIAN PAUL
 

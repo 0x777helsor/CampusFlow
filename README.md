@@ -24,14 +24,18 @@ Activate with `source .venv/bin/activate` on Linux/macOS or `.venv\Scripts\Activ
 
 ## Run and test
 
-Once implemented:
+Run the current CLI and tests:
 
 ```bash
 python main.py
 python -m unittest discover -s tests -v
 ```
 
-The planned menu covers create, list/view, assign, change status, reopen, queue, reports, and exit. Runtime tickets will live in `data/tickets.json`, excluded from Git. With the app closed, move that file elsewhere to start fresh while preserving a backup.
+If your system provides `python3` instead of `python`, use `python3` in these commands.
+
+The menu offers `1` create, `2` list, `3` view by ID, `4` assign, `5` change status, `6` reopen, `7` work queue, `8` reports, and `0` exit. Ticket IDs accept case variations at the prompts; status changes accept `in_progress` or `resolved`.
+
+Every successful creation, assignment, status change, and reopening is saved immediately to `data/tickets.json`, excluded from Git. On restart, existing tickets are loaded before the menu appears. If loading fails, the program displays an error and exits so the original data is preserved. With the app closed, move that file elsewhere to start fresh while preserving a backup.
 
 ## Required behavior
 
@@ -49,4 +53,10 @@ PR index: https://github.com/0x777helsor/CampusFlow/pulls
 
 ## Current implementation and limitations
 
-Ticket priority validation, workflow lifecycle operations, queue ordering, and summary report functions are implemented with automated tests. The initial setup and feature PRs for ticket priority and the workflow status guard have been reviewed and merged. The command-line menu and JSON persistence are not implemented yet, so the application is not runnable end to end. The complete suite should be run again after the remaining features are integrated on `main`.
+All seven features are connected to the CLI. Kingsley's ticket creation, lookup, and JSON storage use the agreed contracts alongside Fabian's assignment, lifecycle, queue, and report functions. Previously reviewed priority and workflow changes remain part of the implementation.
+
+Tests cover priority boundaries, invalid creation inputs, lookup, lifecycle guards, queue ordering, empty reports, JSON round trips, duplicate IDs, creation after reload, malformed data, and preservation of existing files when saving fails. CLI tests exercise the full lifecycle, reopening, queue and report output, restarts, invalid inputs, startup errors, and failed saves. Storage validates the agreed eight-field ticket format. Saves write a temporary file in the destination directory and replace the destination only after a successful write; the CLI updates its active collection only after saving succeeds.
+
+Integration verification on `feat/1-tickets-storage-cli`: `python3 -m unittest discover -s tests -v` ran 61 tests successfully after merging `origin/main` and connecting all menu options.
+
+This is a single-user local application. Run one CLI instance at a time; concurrent writers are not coordinated. Independent learning evidence remains incomplete, and this integration requires partner review and approval before merging. The full test suite and demonstration must be repeated on integrated `main` after approval and merge.

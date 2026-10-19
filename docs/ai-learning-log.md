@@ -4,7 +4,7 @@ Each fellow records at least three real interactions, including one suggestion i
 
 ## Fellow: KINGSLEY AMORIE
 
-Two completed verified interactions are recorded below. One further interaction involving an independently corrected, improved, or rejected AI suggestion is still required.
+Three verified interactions are recorded below. Interaction #3 includes rejection of a deliberately proposed AI simplification after running experiments.
 
 ### Interaction #1 — Lookup, return values, and loop placement
 
@@ -36,6 +36,19 @@ Two completed verified interactions are recorded below. One further interaction 
 - What Kingsley can explain in his own words: "Because IDs can have gaps, the number of tickets doesn’t tell you the largest ID." He explained that `len(ids) + 1` gives the existing ID 3, whereas `max(ids) + 1` gives the unused ID 4, avoiding collisions after earlier IDs are deleted or skipped.
 - Related file and commit: `campusflow/tickets.py`, `create_ticket()` in `d7be621`; the application also uses a default maximum of zero for an empty collection.
 - Scope: This verifies allocation from the IDs currently present. Deleting tickets is not an implemented CampusFlow feature. This entry does not claim independently corrected or rejected AI advice.
+
+### Interaction #3 — Copying tickets before saving
+
+- Problem: Understand why `main.py` copies each ticket dictionary before applying a change and saving it.
+- Initial understanding and predictions: Kingsley initially predicted that copying the outer list would preserve the original ticket's `open` status. He later predicted `resolved` when asked about copying each dictionary. Both predictions were corrected through the experiments below.
+- AI guidance: `tickets.copy()` creates a new list but shares its dictionary objects. `[ticket.copy() for ticket in tickets]` creates separate dictionaries. CampusFlow's current ticket fields contain scalar values, so these dictionary copies separate the pending edits from the active records.
+- Independent experiment #1: Kingsley ran `python3 -c 'tickets = [{"id": "T001", "status": "open"}]; pending = tickets.copy(); pending[0]["status"] = "resolved"; print(tickets[0]["status"])'` and shared the output `resolved`.
+- Independent experiment #2: Kingsley ran `python3 -c 'tickets = [{"id": "T001", "status": "open"}]; pending = [ticket.copy() for ticket in tickets]; pending[0]["status"] = "resolved"; print("Original:", tickets[0]["status"]); print("Pending:", pending[0]["status"])'` and shared `Original: open` and `Pending: resolved`.
+- AI suggestion evaluated: As an explicit learning exercise after these experiments, AI proposed: "We can simplify the code to `pending_tickets = tickets.copy()` and still preserve the original ticket's status if saving fails." This was a deliberately proposed incorrect simplification, not an implementation change or a defect discovered in the application.
+- Decision: Kingsley rejected the simplification using the observed shared-dictionary behavior. No application change was needed.
+- What Kingsley explained in his own words: "I reject pending_tickets = tickets.copy() because changing the pending ticket would also modify the original ticket's dictionary, since both lists reference the same object, so if saving failed, the app's active tickets would already show 'resolved' while the file still contains 'open' — leaving the in-memory state corrupted and out of sync with no previous value left to roll back to."
+- Precision: The demonstrated failure is memory and disk becoming out of sync. The experiment does not establish that recovery from disk or a separate backup would be impossible.
+- Related implementation: `main.py`, `save_change()`; existing failed-save tests in `tests/test_main.py`. Kingsley ran both experiments himself and shared their terminal output; AI did not author new application code or tests for this interaction.
 
 ## Fellow: FABIAN PAUL
 
@@ -83,7 +96,7 @@ Two completed verified interactions are recorded below. One further interaction 
 - Related file/test: `campusflow/reports.py`, `get_queue()`; the existing `test_queue_sorts_by_priority_then_numeric_id_and_excludes_closed` in `tests/test_reports.py`.
 - What I can now explain in my own words: Numeric ID comparison treats the number part as a number, so 2 is less than 10. String comparison compares one character at a time, which can put `T10` before `T2`.
 
-The first two entries record accepted guidance and experiments. Interaction #3 records Fabian's independently evaluated and rejected string-sorting suggestion. Kingsley's separate critical-evaluation requirement remains pending.
+Fabian's first two entries record accepted guidance and experiments. His interaction #3 records an independently evaluated and rejected string-sorting suggestion. Kingsley's separate interaction #3 above records his experiments and rejection of a deliberately proposed copying simplification.
 
 ## Entry template
 

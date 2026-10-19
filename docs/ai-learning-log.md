@@ -83,7 +83,20 @@ Three verified interactions are recorded below. Interaction #3 includes rejectio
 - Related file: /tmp/campusflow-fabian-practice/test_double.py; practice file outside the repository, not a project commit.
 - What I can now explain in my own words: assertEqual() checks that actual == expected. assertRaises() checks that the expected exception is raised.
 
-These entries record verified learning; neither claims an independently corrected, improved, or rejected AI suggestion. That requirement remains for a later genuine interaction.
+### Interaction #3 — Numeric ticket IDs versus string sorting
+
+- Problem: Check whether sorting ticket IDs as strings would preserve the agreed numeric-ID tie-break in the open queue.
+- My initial understanding: I asked to see the experiment code first and did not state a prediction before running it.
+- AI suggestion evaluated: Consider using the ticket ID string directly as the queue's second sort key. This would be simpler, but needed to be checked against the numeric-ID requirement.
+- Useful AI guidance: Compare the current `get_queue()` result with a sort using `(priority, id)` for two equally ranked tickets, `T10` and `T2`.
+- My prediction before the experiment: No prediction was recorded before the run.
+- My independent experiment/test: From the repository root, I ran the provided `python3 -c` experiment against `get_queue()` and Python's string sort.
+- Verification source or actual result: The interpreter printed `CampusFlow queue: ['T2', 'T10']` and `String-sort suggestion: ['T10', 'T2']`.
+- Decision: Rejected sorting by the ID string because it violates the numeric-ID rule. I explained that numeric comparison puts 2 before 10, while string comparison checks characters: after the shared `T`, character `1` sorts before `2`, so `T10` comes first.
+- Related file/test: `campusflow/reports.py`, `get_queue()`; the existing `test_queue_sorts_by_priority_then_numeric_id_and_excludes_closed` in `tests/test_reports.py`.
+- What I can now explain in my own words: Numeric ID comparison treats the number part as a number, so 2 is less than 10. String comparison compares one character at a time, which can put `T10` before `T2`.
+
+Fabian's first two entries record accepted guidance and experiments. His interaction #3 records an independently evaluated and rejected string-sorting suggestion. Kingsley's separate interaction #3 above records his experiments and rejection of a deliberately proposed copying simplification.
 
 ## Entry template
 

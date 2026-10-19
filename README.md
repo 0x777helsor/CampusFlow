@@ -57,6 +57,6 @@ All seven features are connected to the CLI. Kingsley's ticket creation, lookup,
 
 Tests cover priority boundaries, invalid creation inputs, lookup, lifecycle guards, queue ordering, empty reports, JSON round trips, duplicate IDs, creation after reload, malformed data, and preservation of existing files when saving fails. CLI tests exercise the full lifecycle, reopening, queue and report output, restarts, invalid inputs, startup errors, and failed saves. Storage validates the agreed eight-field ticket format. Saves write a temporary file in the destination directory and replace the destination only after a successful write; the CLI updates its active collection only after saving succeeds.
 
-Integration verification on `feat/1-tickets-storage-cli`: `python3 -m unittest discover -s tests -v` ran 61 tests successfully after merging `origin/main` and connecting all menu options.
+Final integrated-main verification (2026-10-19): `python3 -m unittest discover -s tests -v` ran 61 tests successfully. A CLI walkthrough using a temporary JSON file created a critical ticket, assigned it, moved it through `in_progress` and `resolved`, reopened it, displayed the queue and report, and exited successfully. The saved record retained its assignment and reopened `open` status.
 
-This is a single-user local application. Run one CLI instance at a time; concurrent writers are not coordinated. Independent learning evidence remains incomplete, and this integration requires partner review and approval before merging. The full test suite and demonstration must be repeated on integrated `main` after approval and merge.
+This is a single-user local application. Run one CLI instance at a time; concurrent writers are not coordinated.

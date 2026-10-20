@@ -1,5 +1,7 @@
 # Design Decisions
 
+CampusFlow Next: the agreement below is the original-version baseline. Current roles and pending Next contract decisions are in `campusflow-next-handoff.md`. Next ownership supersedes the original ownership below; no revised function/schema contract has yet been agreed. Preserve this history and record the next agreement explicitly before application coding.
+
 Status: agreed without changes by KINGSLEY AMORIE and FABIAN PAUL, as confirmed by Kingsley on 2026-10-11.
 
 ## Ownership

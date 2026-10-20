@@ -1,5 +1,34 @@
 # Design Decisions
 
+## CampusFlow Next proposal — pending both engineers' agreement
+
+Prepared during Kingsley's session on 2026-10-20. This section is a proposal, not approval from Kingsley or Fabian. Review it together before implementing shared interfaces. The historical agreement follows below.
+
+Keep `ValueError` for invalid data/actions and propagate `OSError` for filesystem failures. Business functions do no input/printing. Reject before mutation; a failure preserves the complete collection, including nested notes. Retain current public signatures unless explicitly extended below.
+
+| Owner/module | Proposed API | Return and side effects |
+| --- | --- | --- |
+| A / validation | `validate_ticket(ticket)`, `validate_tickets(tickets)` | `None` on success, `ValueError` on invalid canonical Next records; read-only; collection validation rejects duplicate ticket IDs |
+| A / validation | `normalize_category(value)`, `normalize_urgency(value)`, `validate_affected_users(value)` | Canonical category, canonical urgency, or positive integer respectively; reject invalid types including bool counts |
+| A / tickets | `next_ticket_id(tickets)` | Next canonical T ID from maximum numeric ID + 1; empty gives T001; no mutation |
+| A / tickets | Existing `create_ticket(...)` | Append/return validated ticket with independent `notes: []` |
+| A / notes | `next_note_id(ticket)` | Next canonical N ID from maximum existing per-ticket number + 1; empty gives N001; no mutation |
+| A / notes | `add_note(tickets, ticket_id, author, message)` | Append/return note dictionary after validation; only open/in_progress; trimmed author nonblank and message length 5–300 |
+| A / notes | `get_notes(tickets, ticket_id)` | New list of copied note dictionaries ordered by numeric note ID; unknown ticket raises ValueError |
+| A / storage | Existing `load_tickets(path)` | Return fully validated new collection; missing file gives []; no active-memory argument or mutation |
+| A / storage | `reload_tickets(tickets, path)` | Load/validate first, then replace `tickets[:]`; return None; failed load leaves memory unchanged |
+| A / storage | Existing `save_tickets(tickets, path)` | Validate and atomically replace JSON only on successful write; return None |
+
+Proposed schema compatibility: keep the JSON list format. On load only, accept valid original eight-field records by copying and adding empty notes, then validate the entire converted collection. Reject other missing/extra fields and malformed notes. Do not rewrite the source merely by loading. Subsequent explicit saves write all nine fields. Permit mixed legacy/Next records during conversion; document this behavior and test that failed conversion changes neither file nor active memory. Canonical IDs retain the existing minimum-three-digit format and expand beyond 999; note IDs follow the same rule with N. Notes have exactly `note_id`, `author`, `message`, unique IDs within each ticket.
+
+Validation helpers must not import modules that import them. Agree placement of priority calculation/helper dependencies before refactoring; preserve exact precedence and public `calculate_priority` behavior.
+
+B coordination proposal: CLI uses `copy.deepcopy(tickets)` for pending changes before calling A's mutating APIs and saving. Update active memory only after save succeeds. The return value of `add_note` is a note, unlike workflow functions returning tickets; the CLI should handle this explicitly.
+
+B-owned contracts to confirm/propose: `search_tickets(tickets, title="", category="", status="", priority="")` returns a new read-only result list, combining supplied filters with AND, normalized valid enum filters and casefold title matching; default numeric ID order. A separate optional priority ordering must not alter `get_queue`. Report proposal retains `total`, `by_status`, `by_priority` and adds `by_category`, `unresolved`, `resolved`, `resolution_percentage` (float, 0.0 for empty input; round only for display). Fabian owns the final search/report/quiz interface proposals and their tests; these signatures are discussion inputs, not implementation instructions accepted on his behalf.
+
+Agreement record: Kingsley confirmation pending; Fabian confirmation pending. Actual issue numbers and feature branches pending.
+
 CampusFlow Next: the agreement below is the original-version baseline. Current roles and pending Next contract decisions are in `campusflow-next-handoff.md`. Next ownership supersedes the original ownership below; no revised function/schema contract has yet been agreed. Preserve this history and record the next agreement explicitly before application coding.
 
 Status: agreed without changes by KINGSLEY AMORIE and FABIAN PAUL, as confirmed by Kingsley on 2026-10-11.

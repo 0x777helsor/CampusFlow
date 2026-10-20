@@ -61,12 +61,12 @@ Agents must not invent progress, run personal-data demonstrations, push automati
 
 ## Engineer A handoff — Kingsley updates this block
 
-- Status: role confirmed; preparation only.
+- Status: baseline recorded; proposed contracts awaiting both engineers' confirmation.
 - Issue / feature branch / PR: not created.
-- Completed: agreed to be Engineer A; requested this shared guide.
-- Checks: original-main output shared by Kingsley: 61 tests passed at `6ef5ff8`. No new baseline run claimed here.
+- Completed: role confirmed; AI prepared `docs/baseline-check.md` and Next contract proposal during Kingsley's session on 2026-10-20. No Next source/tests implemented.
+- Checks: AI baseline at `0482c75`: Python 3.12.3, 61 tests passed in 0.164s; three scripted temporary-file CLI checks passed. See baseline for attribution and inputs.
 - Blockers: revised contracts require both engineers' agreement; mentor priority focus not supplied.
-- Next: run/document baseline with Fabian, propose safety/notes/storage contracts, complete a focused learning cycle, then create the A issue and feature branch.
+- Next: Kingsley reads/explains the proposed contracts; obtain Fabian's confirmation or revisions, complete a focused learning cycle, then create the A issue and feature branch.
 
 ## Engineer B handoff — Fabian updates this block
 
@@ -79,6 +79,6 @@ Agents must not invent progress, run personal-data demonstrations, push automati
 
 ## Shared handoff
 
-- Current documentation branch: `docs/next-working-agreement`.
-- This guide needs partner review and merge before it is treated as the shared main-branch instruction on both computers.
-- Baseline file, issue links, revised contract agreement, review evidence, fresh-clone check and final submission SHA remain pending. Update these only from actual work.
+- Shared guide merged through PR #10 at `0482c75`. Current preparation branch: `docs/next-baseline-contracts`.
+- Baseline and contract proposal are prepared locally; this preparation needs partner review before merging. No contract agreement is inferred from preparation.
+- Issue links, revised contract agreement, review evidence, fresh-clone check and final submission SHA remain pending. Update these only from actual work. Earlier introduction text describes the starting state; use this block and each engineer's entry for subsequent progress.

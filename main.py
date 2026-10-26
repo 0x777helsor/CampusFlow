@@ -1,10 +1,13 @@
 """Command-line interface for the CampusFlow helpdesk."""
 
+from copy import deepcopy
 from pathlib import Path
 
 from campusflow.reports import get_queue, get_report
+from campusflow.search import search_tickets
 from campusflow.storage import load_tickets, save_tickets
 from campusflow.tickets import create_ticket, get_ticket
+from campusflow.understanding_check import run_check
 from campusflow.workflow import assign_ticket, change_status, reopen_ticket
 
 
@@ -12,12 +15,13 @@ DATA_PATH = Path(__file__).resolve().parent / "data" / "tickets.json"
 MENU = (
     "\nCampusFlow\n1. Create ticket\n2. List tickets\n3. View ticket"
     "\n4. Assign ticket\n5. Change status\n6. Reopen ticket"
-    "\n7. Work queue\n8. Reports\n0. Exit"
+    "\n7. Work queue\n8. Reports\n9. Add note\n10. View notes"
+    "\n11. Search tickets\n12. Understanding check\n0. Exit"
 )
 
 
 def display_ticket(ticket):
-    """Show all eight ticket fields."""
+    """Show the ticket fields and any attached notes."""
     print(f"\nID: {ticket['id']}")
     print(f"Title: {ticket['title']}")
     print(f"Category: {ticket['category']}")
@@ -26,11 +30,13 @@ def display_ticket(ticket):
     print(f"Priority: {ticket['priority']}")
     print(f"Status: {ticket['status']}")
     print(f"Assigned to: {ticket['assigned_to'] or 'Unassigned'}")
+    for note in ticket.get("notes", []):
+        print(f"Note {note['note_id']} by {note['author']}: {note['message']}")
 
 
 def save_change(tickets, path, operation, *arguments):
     """Apply an operation to copies, save, then update the active collection."""
-    pending_tickets = [ticket.copy() for ticket in tickets]
+    pending_tickets = deepcopy(tickets)
     ticket = operation(pending_tickets, *arguments)
     save_tickets(pending_tickets, path)
     tickets[:] = pending_tickets
@@ -86,6 +92,52 @@ def display_report(tickets):
     print("By priority:")
     for priority, count in report["by_priority"].items():
         print(f"  {priority}: {count}")
+    print("By category:")
+    for category, count in report["by_category"].items():
+        print(f"  {category}: {count}")
+    print(f"Unresolved tickets: {report['unresolved']}")
+    print(f"Resolved tickets: {report['resolved']}")
+    print(f"Resolution percentage: {report['resolution_percentage']:.1f}%")
+
+
+def add_note_from_prompt(tickets, path):
+    """Collect note details and persist through the agreed notes business API."""
+    try:
+        from campusflow.notes import add_note
+    except ImportError as error:
+        raise ValueError("The notes business module is not integrated yet.") from error
+
+    ticket_id = input("Ticket ID: ").strip().upper()
+    author = input("Author: ")
+    message = input("Note: ")
+    note = save_change(tickets, path, add_note, ticket_id, author, message)
+    print(f"Added note {note['note_id']} to {ticket_id}.")
+
+
+def view_notes_from_prompt(tickets):
+    """Display notes returned by the read-only notes business API."""
+    try:
+        from campusflow.notes import get_notes
+    except ImportError as error:
+        raise ValueError("The notes business module is not integrated yet.") from error
+
+    ticket_id = input("Ticket ID: ").strip().upper()
+    notes = get_notes(tickets, ticket_id)
+    if not notes:
+        print(f"No notes for {ticket_id}.")
+        return
+    for note in notes:
+        print(f"{note['note_id']} | {note['author']}: {note['message']}")
+
+
+def search_from_prompt(tickets):
+    """Collect optional filters and display the matching tickets."""
+    title = input("Title contains (blank for any): ")
+    category = input("Category (blank for any): ")
+    status = input("Status (blank for any): ")
+    priority = input("Priority (blank for any): ")
+    matches = search_tickets(tickets, title, category, status, priority)
+    display_collection(matches, "No matching tickets.")
 
 
 def main(path=DATA_PATH):
@@ -116,8 +168,16 @@ def main(path=DATA_PATH):
                 display_collection(get_queue(tickets), "No open tickets.")
             elif choice == "8":
                 display_report(tickets)
+            elif choice == "9":
+                add_note_from_prompt(tickets, path)
+            elif choice == "10":
+                view_notes_from_prompt(tickets)
+            elif choice == "11":
+                search_from_prompt(tickets)
+            elif choice == "12":
+                run_check()
             else:
-                print("Choose a number from 0 to 8.")
+                print("Choose a number from 0 to 12.")
         except (ValueError, OSError) as error:
             print(f"Error: {error}")
         except (EOFError, KeyboardInterrupt):

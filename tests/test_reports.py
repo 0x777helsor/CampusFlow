@@ -32,9 +32,9 @@ class QueueTests(unittest.TestCase):
 class ReportTests(unittest.TestCase):
     def test_report_counts_all_tickets_and_includes_zero_categories(self):
         tickets = [
-            {"id": "T001", "status": "open", "priority": "high"},
-            {"id": "T002", "status": "resolved", "priority": "low"},
-            {"id": "T003", "status": "open", "priority": "high"},
+            {"id": "T001", "status": "open", "priority": "high", "category": "Other"},
+            {"id": "T002", "status": "resolved", "priority": "low", "category": "Network"},
+            {"id": "T003", "status": "open", "priority": "high", "category": "Other"},
         ]
 
         self.assertEqual(
@@ -43,6 +43,10 @@ class ReportTests(unittest.TestCase):
                 "total": 3,
                 "by_status": {"open": 2, "in_progress": 0, "resolved": 1},
                 "by_priority": {"critical": 0, "high": 2, "medium": 0, "low": 1},
+                "by_category": {"Network": 1, "Hardware": 0, "Software": 0, "Other": 2},
+                "unresolved": 2,
+                "resolved": 1,
+                "resolution_percentage": 1 / 3 * 100,
             },
         )
 
@@ -53,6 +57,10 @@ class ReportTests(unittest.TestCase):
                 "total": 0,
                 "by_status": {"open": 0, "in_progress": 0, "resolved": 0},
                 "by_priority": {"critical": 0, "high": 0, "medium": 0, "low": 0},
+                "by_category": {"Network": 0, "Hardware": 0, "Software": 0, "Other": 0},
+                "unresolved": 0,
+                "resolved": 0,
+                "resolution_percentage": 0.0,
             },
         )
 

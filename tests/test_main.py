@@ -1,15 +1,19 @@
 """Exercise the CLI with scripted input and isolated data files."""
 
 from contextlib import redirect_stdout
+from copy import deepcopy
 from io import StringIO
 from pathlib import Path
+import sys
 import tempfile
+from types import ModuleType
 import unittest
 from unittest.mock import patch
 
 from main import main
 from campusflow.storage import load_tickets, save_tickets
 from campusflow.tickets import create_ticket
+from campusflow.understanding_check import QUESTIONS
 
 
 class CliTests(unittest.TestCase):
@@ -126,7 +130,7 @@ class CliTests(unittest.TestCase):
     def test_invalid_choice_returns_to_menu(self):
         result, output = self.run_cli(["99", "2", "0"])
         self.assertEqual(result, 0)
-        self.assertIn("Choose a number from 0 to 8.", output)
+        self.assertIn("Choose a number from 0 to 12.", output)
         self.assertIn("No tickets yet.", output)
 
     def test_workflow_menu_saves_lifecycle_and_retains_assignment_after_reopen(self):
@@ -196,6 +200,100 @@ class CliTests(unittest.TestCase):
         for category in ("open", "in_progress", "resolved", "critical", "high", "medium", "low"):
             self.assertIn(f"{category}: 0", output)
         self.assertFalse(self.path.exists())
+
+    def test_search_menu_displays_empty_result_message(self):
+        result, output = self.run_cli(["11", "wifi", "Network", "open", "critical", "0"])
+
+        self.assertEqual(result, 0)
+        self.assertIn("No matching tickets.", output)
+
+    def test_search_menu_displays_matching_ticket(self):
+        tickets = []
+        create_ticket(tickets, "Wi-Fi outage", "Network", "high", 2)
+        save_tickets(tickets, self.path)
+
+        result, output = self.run_cli(["11", "wi-fi", "network", "open", "high", "0"])
+
+        self.assertEqual(result, 0)
+        self.assertIn("ID: T001", output)
+        self.assertIn("Title: Wi-Fi outage", output)
+
+    def test_note_menu_adds_and_views_note_through_business_api(self):
+        ticket = {
+            "id": "T001", "title": "Problem", "category": "Other", "urgency": "low",
+            "affected_users": 1, "priority": "low", "status": "open",
+            "assigned_to": None, "notes": [],
+        }
+
+        def fake_add_note(tickets, ticket_id, author, message):
+            note = {"note_id": "N001", "author": author.strip(), "message": message.strip()}
+            next(item for item in tickets if item["id"] == ticket_id)["notes"].append(note)
+            return note
+
+        def fake_get_notes(tickets, ticket_id):
+            return deepcopy(next(item for item in tickets if item["id"] == ticket_id)["notes"])
+
+        notes_module = ModuleType("campusflow.notes")
+        notes_module.add_note = fake_add_note
+        notes_module.get_notes = fake_get_notes
+        output = StringIO()
+        with patch("main.load_tickets", return_value=[ticket]), \
+                patch("main.save_tickets") as save, \
+                patch.dict(sys.modules, {"campusflow.notes": notes_module}), \
+                patch("builtins.input", side_effect=[
+                    "9", "T001", " Fabian ", "A useful note", "10", "T001", "0",
+                ]), redirect_stdout(output):
+            result = main(self.path)
+
+        self.assertEqual(result, 0)
+        self.assertEqual(save.call_args.args[0][0]["notes"][0]["note_id"], "N001")
+        self.assertIn("Added note N001 to T001.", output.getvalue())
+        self.assertIn("N001 | Fabian: A useful note", output.getvalue())
+
+    def test_note_menu_reports_when_business_module_is_not_integrated(self):
+        with patch.dict(sys.modules, {"campusflow.notes": None}):
+            result, output = self.run_cli(["9", "0"])
+
+        self.assertEqual(result, 0)
+        self.assertIn("The notes business module is not integrated yet.", output)
+
+    def test_understanding_check_is_reachable_from_menu(self):
+        answers = [question[2] for question in QUESTIONS]
+        result, output = self.run_cli(["12", *answers, "queue uses numeric order", "save copy protects memory", "0"])
+
+        self.assertEqual(result, 0)
+        self.assertIn("Score: 6/6", output)
+
+    def test_failed_note_save_does_not_change_nested_active_notes(self):
+        ticket = {
+            "id": "T001", "title": "Problem", "category": "Other", "urgency": "low",
+            "affected_users": 1, "priority": "low", "status": "open",
+            "assigned_to": None, "notes": [],
+        }
+
+        def fake_add_note(tickets, ticket_id, author, message):
+            note = {"note_id": "N001", "author": author.strip(), "message": message.strip()}
+            next(item for item in tickets if item["id"] == ticket_id)["notes"].append(note)
+            return note
+
+        notes_module = ModuleType("campusflow.notes")
+        notes_module.add_note = fake_add_note
+        notes_module.get_notes = lambda tickets, ticket_id: deepcopy(
+            next(item for item in tickets if item["id"] == ticket_id)["notes"]
+        )
+        original = deepcopy(ticket)
+        output = StringIO()
+        with patch("main.load_tickets", return_value=[ticket]), \
+                patch("main.save_tickets", side_effect=OSError("Disk full")), \
+                patch.dict(sys.modules, {"campusflow.notes": notes_module}), \
+                patch("builtins.input", side_effect=["9", "T001", "Fabian", "A useful note", "2", "0"]), \
+                redirect_stdout(output):
+            result = main(self.path)
+
+        self.assertEqual(result, 0)
+        self.assertEqual(ticket, original)
+        self.assertIn("Disk full", output.getvalue())
+        self.assertNotIn("Added note", output.getvalue())
 
     def test_failed_workflow_save_preserves_active_and_stored_tickets(self):
         for choice, status, staff, arguments in (
